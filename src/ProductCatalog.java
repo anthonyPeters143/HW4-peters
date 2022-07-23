@@ -1,26 +1,29 @@
 import java.io.File;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class ProductCatalog {
 
-    private final String FILENAME = "item.txt";
-
     private HashMap<String, ProductSpecification> productCatalogHashMap;
 
     ProductCatalog() {
+        // Initialize file names
+        String fileName = "item.txt";
+
         // Initialize Product HashMap
         productCatalogHashMap = new HashMap<>();
 
         // Input data from file
         try {
             // Create file
-            File productCatalogFile = new File(FILENAME);
+            File catalogFile = new File(fileName);
 
             // Set up scanner
-            Scanner productCatalogScanner = new Scanner(productCatalogFile);
+            Scanner productCatalogScanner = new Scanner(catalogFile);
 
             // Scan in input and split by new line commas
             String productCatalogLine = productCatalogScanner.nextLine();
@@ -43,6 +46,37 @@ public class ProductCatalog {
             // File input failed
             exception.printStackTrace();
         }
+    }
+
+    public void addProductSpecification(String codeInput, String nameInput, BigDecimal priceInput) {
+        productCatalogHashMap.put(codeInput,new ProductSpecification(codeInput,nameInput,priceInput));
+    }
+
+    public void deleteProductSpecification(String codeInput) {
+        productCatalogHashMap.remove(codeInput);
+    }
+
+    public String getProductsStrings(DecimalFormat currentFormat) {
+        String codeNamePriceLabelFormat = "%-11s %-15s %-12s", codeNamePriceListFormat = "%-11s %-15s %-8s";
+        String returnString = "";
+
+        // Add top of list labels
+        returnString = returnString.concat(
+                String.format(codeNamePriceLabelFormat,
+                        "item code","item name","unit price")
+                        + "\n");
+
+        // Loop through productCatalog for code, name, and price of each product
+        for (Map.Entry<String, ProductSpecification> productCatalogTracker : productCatalogHashMap.entrySet()) {
+            returnString = returnString.concat(
+                    String.format(codeNamePriceListFormat,
+                            productCatalogTracker.getValue().getProductCode(),
+                            productCatalogTracker.getValue().getProductName(),
+                            currentFormat.format(productCatalogTracker.getValue().getProductPrice()))
+                            + "\n");
+        }
+
+        return returnString;
     }
 
     /**
