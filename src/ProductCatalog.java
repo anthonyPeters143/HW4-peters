@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -38,7 +40,6 @@ public class ProductCatalog {
                                 String.valueOf(productCatalogSplitImportArray[splitIndex+1]),
                                 BigDecimal.valueOf(Double.parseDouble(productCatalogSplitImportArray[splitIndex+2]))));
             }
-
             // Close scanner
             productCatalogScanner.close();
 
