@@ -24,15 +24,18 @@ public class Sale {
 
     public void addSalesLineItem(ProductSpecification specification, int quantity){
         // Add total to end of day total
-        eodTotal = eodTotal.add(specification.getProductPrice());
+//        eodTotal = eodTotal.add(specification.getProductPrice().multiply(BigDecimal.valueOf(quantity)));
+
+        eodTotal = eodTotal.add((specification.getProductPrice()).multiply(BigDecimal.valueOf(quantity)));
 
         // Loop array list to check if SalesLineItem is already created
         for (SalesLineItem SalesLineItemTracker : salesLineItemArrayList) {
             if (specification.getProductCode().equals(SalesLineItemTracker.getProductCode())){
                 // SalesLineItem tracker already created
                 // Set the salesLineItem's price to the new total plus the old total
-                SalesLineItemTracker.setProductTotal(
-                        specification.getProductPrice().multiply(BigDecimal.valueOf(quantity)).add(SalesLineItemTracker.getProductTotal()));
+                SalesLineItemTracker.setProductTotal((specification.getProductPrice()
+                        .multiply(BigDecimal.valueOf(quantity)))
+                        .add(SalesLineItemTracker.getProductTotal()));
 
                 // Set the salesLineItem's quantity to the new amount plus the old amount
                 SalesLineItemTracker.setProductQuantity(quantity + SalesLineItemTracker.getProductQuantity());
@@ -48,7 +51,8 @@ public class Sale {
     public String createReceipt(DecimalFormat currencyFormat) {
         BigDecimal taxableTotal = BigDecimal.valueOf(0), nontaxableTotal = BigDecimal.valueOf(0);
         String receiptString = "";
-        String quantityNameTotalFormat = "%4s %-19s %s$%1$8s", subtotalsFormat = "%-15s %1$7s %-15s$%1$7s";
+        String quantityNameTotalFormat = "%4s %-16s$%7s",
+                subtotalFormat = "%-21s$%7s", subtotalTaxFormat = "%-21s$%7s";
 
         // Sort into alphabetical order by name
         Collections.sort(salesLineItemArrayList);
@@ -60,11 +64,11 @@ public class Sale {
                 // Check taxable flag
                 if (salesLineItemTracker.isProductTaxable()) {
                     // Taxable, increment taxable total
-                    taxableTotal = (salesLineItemTracker.getProductTotal().add(taxableTotal));
+                    taxableTotal = ((salesLineItemTracker.getProductTotal()).add(taxableTotal));
 
                 } else {
                     // Nontaxable, increment non-taxable total
-                    nontaxableTotal = (salesLineItemTracker.getProductTotal().add(nontaxableTotal));
+                    nontaxableTotal = ((salesLineItemTracker.getProductTotal()).add(nontaxableTotal));
 
                 }
 
@@ -75,18 +79,19 @@ public class Sale {
                     quantityNameTotalFormat,
                     salesLineItemTracker.getProductQuantity(),
                     salesLineItemTracker.getProductName(),
-                    currencyFormat.format(salesLineItemTracker.getProductTotal())
-                    + "\n"));
+                    currencyFormat.format(salesLineItemTracker.getProductTotal()))
+                    ) + "\n";
         }
 
         // Compile subtotals then format strings and concat to receipt string
         receiptString = receiptString.concat(
-                String.format(subtotalsFormat,
-                        "Subtotal",
-                        currencyFormat.format(taxableTotal.add(nontaxableTotal)),
-                        "\nTotal with tax (6%)",
-                        currencyFormat.format((taxableTotal.multiply(BigDecimal.valueOf(.06))).add(taxableTotal.add(nontaxableTotal)))
-                        ));
+                String.format(subtotalFormat,
+                    "Subtotal", currencyFormat.format(taxableTotal.add(nontaxableTotal)))
+                    + "\n" +
+                    String.format(subtotalTaxFormat,
+                    "Total with tax (6%)",currencyFormat.format((taxableTotal.multiply(BigDecimal.valueOf(.06))).add(taxableTotal.add(nontaxableTotal))))
+                );
+
 
         return receiptString;
     }

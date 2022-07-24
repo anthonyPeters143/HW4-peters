@@ -213,7 +213,7 @@ public class Register {
                 codeInputFlag = true;
 
                 // Print receipt top
-                System.out.println(listItems());
+                System.out.println(sale.createReceipt(currencyFormat));
 
             } else if (userInput.equals("0000")) {
                 // Print item list
@@ -255,7 +255,7 @@ public class Register {
 
                     // Output item total
                     System.out.print(ITEM_TOTAL_MESSAGE +  String.format(outputFormat,
-                            currencyFormat.format(specification.getProductPrice()) +
+                            currencyFormat.format(productPrice) +
                                     "\n"));
                 }
                 else {
