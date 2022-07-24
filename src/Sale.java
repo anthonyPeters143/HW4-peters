@@ -12,7 +12,7 @@ public class Sale {
      */
     ArrayList<SalesLineItem> salesLineItemArrayList;
 
-    BigDecimal eodTotal;
+    BigDecimal eodTotal, subtotal, subtotalTax;
 
     Sale() {
         // Initialize Sale item array list
@@ -20,12 +20,12 @@ public class Sale {
 
         // Initialize end of day total
         eodTotal = BigDecimal.valueOf(0);
+        subtotal = BigDecimal.valueOf(0);
+        subtotalTax = BigDecimal.valueOf(0);
     }
 
     public void addSalesLineItem(ProductSpecification specification, int quantity){
         // Add total to end of day total
-//        eodTotal = eodTotal.add(specification.getProductPrice().multiply(BigDecimal.valueOf(quantity)));
-
         eodTotal = eodTotal.add((specification.getProductPrice()).multiply(BigDecimal.valueOf(quantity)));
 
         // Loop array list to check if SalesLineItem is already created
@@ -83,20 +83,40 @@ public class Sale {
                     ) + "\n";
         }
 
+        subtotal = taxableTotal.add(nontaxableTotal);
+        subtotalTax = (taxableTotal.multiply(BigDecimal.valueOf(.06))).add(taxableTotal.add(nontaxableTotal));
+
         // Compile subtotals then format strings and concat to receipt string
         receiptString = receiptString.concat(
                 String.format(subtotalFormat,
-                    "Subtotal", currencyFormat.format(taxableTotal.add(nontaxableTotal)))
+                    "Subtotal", currencyFormat.format(subtotal))
                     + "\n" +
                     String.format(subtotalTaxFormat,
-                    "Total with tax (6%)",currencyFormat.format((taxableTotal.multiply(BigDecimal.valueOf(.06))).add(taxableTotal.add(nontaxableTotal))))
+                    "Total with tax (6%)",currencyFormat.format(subtotalTax))
                 );
 
 
         return receiptString;
     }
 
+    public void resetSale() {
+        // Reset subtotal fields to 0
+        subtotal = BigDecimal.valueOf(0);
+        subtotalTax = BigDecimal.valueOf(0);
+
+        // Reset product ArrayList
+        salesLineItemArrayList = new ArrayList<SalesLineItem>();
+    }
+
     public BigDecimal getEodTotal() {
         return eodTotal;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public BigDecimal getSubtotalTax() {
+        return subtotalTax;
     }
 }

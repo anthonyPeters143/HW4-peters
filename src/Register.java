@@ -27,12 +27,12 @@ public class Register {
             ITEM_NAME_MESSAGE                   = "         item name : ",
             ENTER_QUANTITY_MESSAGE              = "\n\tEnter quantity : ",
             ITEM_TOTAL_MESSAGE                  = "        item total : $",
-            RECEIPT_LINE                        = "\n----------------------------\n",
+            RECEIPT_LINE                        = "----------------------------",
             RECEIPT_TOP                         = "Items list:\n",
-            TENDERED_AMOUNT_RECEIPT             = "\nTendered amount\t\t\t $ ",
+            TENDERED_AMOUNT_RECEIPT             = "Tendered amount",
             TENDER_AMOUNT_WRONG                 = "\nAmount entered is invalid",
             TENDER_AMOUNT_TOO_SMALL             = "\nAmount entered is too small",
-            CHANGE_AMOUNT                       = "Change\t\t\t\t\t $",
+            CHANGE_AMOUNT                       = "Change",
             EOD_MESSAGE                         = "\nThe total sale for the day is  $",
 
     UPDATE_PROMPT_MESSAGE               = "\nDo you want to update the items data? (A/D/M/Q): ",
@@ -79,6 +79,9 @@ public class Register {
 
         // Sale loop
         do {
+            // Welcome message
+            System.out.print(WELCOME_MESSAGE);
+
             // Initialize Sale
             sale = new Sale();
 
@@ -131,7 +134,6 @@ public class Register {
 
                     // New sale
                     findCode(systemInScanner);
-
                 }
                 // Test if input is 1 char long and == N or n
                 else if (userInput.matches("[Nn]{1}")){
@@ -140,8 +142,11 @@ public class Register {
                     returnInt = 1;
 
                     // EOD earnings
-                    System.out.print(EOD_MESSAGE +
-                            String.format(eodFormat, currencyFormat.format(sale.getEodTotal())));
+                    if (sale == null) {
+                        System.out.print(EOD_MESSAGE + "0.00");
+                    } else {
+                        System.out.print(EOD_MESSAGE + String.format(eodFormat, currencyFormat.format(sale.getEodTotal())));
+                    }
 
                     // Prompt for update
                     updateProducts(systemInScanner);
@@ -172,7 +177,7 @@ public class Register {
         // Declare and Initialization
         ProductSpecification specification;
         String userInput;
-        boolean codeInputFlag = false, quitFlag = false;
+        boolean codeInputFlag, quitFlag = false, tenderCorrectFlag = false;
 
         // Loop till code input is valid
         do {
@@ -214,6 +219,42 @@ public class Register {
 
                 // Print receipt top
                 System.out.println(sale.createReceipt(currencyFormat));
+
+                // Loop till tendered amount is larger than total with tax
+                do {
+                    try {
+                        // Prompt for tender amount
+                        System.out.printf("\n%-21s$ ",TENDERED_AMOUNT_RECEIPT);
+
+                        // User input
+                        BigDecimal tenderAmount = BigDecimal.valueOf(Double.parseDouble(systemInScanner.next()));
+                        BigDecimal subtotalTax = sale.getSubtotalTax();
+
+                        // Tender amount is correct
+                        if (tenderAmount.compareTo(subtotalTax) >= 0) {
+                            tenderCorrectFlag = true;
+
+                            // Change
+                            // Find change by subtracting tenderAmount by Total with tax
+                            System.out.printf("\n%-21s$%7s\n%s\n",
+                                    CHANGE_AMOUNT,
+                                    currencyFormat.format(tenderAmount.subtract(subtotalTax)),
+                                    RECEIPT_LINE
+                            );
+
+                            // Reset sale
+                            sale.resetSale();
+                        }
+                        else {
+                            // Tender is wrong
+                            System.out.print(TENDER_AMOUNT_TOO_SMALL);
+                        }
+                    } catch (Exception e) {
+                        // Tender is wrong
+                        System.out.print(TENDER_AMOUNT_WRONG);
+                    }
+
+                } while (!tenderCorrectFlag);
 
             } else if (userInput.equals("0000")) {
                 // Print item list
@@ -339,7 +380,7 @@ public class Register {
 
                 } else {
                     // Created before
-                    System.out.print(UPDATE_ITEM_ALREADY_ADDED);
+                    System.out.print(UPDATE_ITEM_ALREADY_ADDED + "\n");
                 }
             } else {
                 // Code input invalid
