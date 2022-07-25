@@ -24,18 +24,16 @@ public class Sale {
         subtotalTax = BigDecimal.valueOf(0);
     }
 
-    public void addSalesLineItem(ProductSpecification specification, int quantity){
+    public void addSalesLineItem(ProductSpecification specification, int quantity, BigDecimal price){
         // Add total to end of day total
-        eodTotal = eodTotal.add((specification.getProductPrice()).multiply(BigDecimal.valueOf(quantity)));
+        eodTotal = eodTotal.add(price);
 
         // Loop array list to check if SalesLineItem is already created
         for (SalesLineItem SalesLineItemTracker : salesLineItemArrayList) {
             if (specification.getProductCode().equals(SalesLineItemTracker.getProductCode())){
                 // SalesLineItem tracker already created
                 // Set the salesLineItem's price to the new total plus the old total
-                SalesLineItemTracker.setProductTotal((specification.getProductPrice()
-                        .multiply(BigDecimal.valueOf(quantity)))
-                        .add(SalesLineItemTracker.getProductTotal()));
+                SalesLineItemTracker.setProductTotal((SalesLineItemTracker.getProductTotal()).add(price));
 
                 // Set the salesLineItem's quantity to the new amount plus the old amount
                 SalesLineItemTracker.setProductQuantity(quantity + SalesLineItemTracker.getProductQuantity());
@@ -45,14 +43,15 @@ public class Sale {
         }
 
         // Item not found, create new item tracker
-        salesLineItemArrayList.add(new SalesLineItem(specification,quantity));
+        salesLineItemArrayList.add(new SalesLineItem(specification,quantity,price));
     }
 
     public String createReceipt(DecimalFormat currencyFormat) {
         BigDecimal taxableTotal = BigDecimal.valueOf(0), nontaxableTotal = BigDecimal.valueOf(0);
         String receiptString = "";
-        String quantityNameTotalFormat = "%4s %-16s$%7s",
-                subtotalFormat = "%-21s$%7s", subtotalTaxFormat = "%-21s$%7s";
+        String quantityNameTotalFormat = "%4s %-16s$%7s5n",
+//                subtotalFormat = "%-21s$%7s", subtotalTaxFormat = "%-21s$%7s";
+                    subtotalFormat = "%-21s$%7s%n%-21s$%7s";
 
         // Sort into alphabetical order by name
         Collections.sort(salesLineItemArrayList);
@@ -75,12 +74,11 @@ public class Sale {
             }
 
             // Add product's name, quantity, total, and new line char to return string
-            receiptString = receiptString.concat(String.format(
-                    quantityNameTotalFormat,
+            receiptString = receiptString.concat(String.format(quantityNameTotalFormat,
                     salesLineItemTracker.getProductQuantity(),
                     salesLineItemTracker.getProductName(),
                     currencyFormat.format(salesLineItemTracker.getProductTotal()))
-                    ) + "\n";
+                    );
         }
 
         subtotal = taxableTotal.add(nontaxableTotal);
@@ -89,11 +87,10 @@ public class Sale {
         // Compile subtotals then format strings and concat to receipt string
         receiptString = receiptString.concat(
                 String.format(subtotalFormat,
-                    "Subtotal", currencyFormat.format(subtotal))
-                    + "\n" +
-                    String.format(subtotalTaxFormat,
-                    "Total with tax (6%)",currencyFormat.format(subtotalTax))
-                );
+                    "Subtotal",
+                        currencyFormat.format(subtotal),
+                    "Total with tax (6%)",
+                        currencyFormat.format(subtotalTax)));
 
 
         return receiptString;

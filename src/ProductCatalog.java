@@ -12,9 +12,7 @@ public class ProductCatalog {
 
     private HashMap<String, ProductSpecification> productCatalogHashMap;
 
-    ProductCatalog() {
-        // Initialize file names
-        String fileName = "item.txt";
+    ProductCatalog(String fileName) {
 
         // Initialize Product HashMap
         productCatalogHashMap = new HashMap<>();

@@ -1,5 +1,6 @@
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Register {
@@ -15,50 +16,62 @@ public class Register {
     Sale sale;
 
     private static final String
-            WELCOME_MESSAGE                     = "\nWelcome to Peter's cash register system!\n",
-            FILENAME_MESSAGE                    = "\nInput file : ",
-            FILE_INPUT_ERROR_MESSAGE            = "!!! Invalid input",
-            BEGINNING_SALE_MESSAGE              = "\nBeginning a new sale? (Y/N) ",
-            SALE_INPUT_ERROR_MESSAGE            = "!!! Invalid input\nShould be (Y/N)",
+            WELCOME_MESSAGE                     = "Welcome to Peter's cash register system!",
+            FILENAME_MESSAGE                    = "Input file : ",
+            INPUT_ERROR                         = "!!! Invalid input",
+            FILE_ERROR                          = "File name is invalid",
+            BEGINNING_SALE_MESSAGE              = "Beginning a new sale? (Y/N) ",
+            SALE_ERROR                          = "Should be (Y/N)",
             CODE_INPUT_INCORRECT_MESSAGE        = "!!! Invalid product code\nShould be A[###] or B[###], 0000 = item list, -1 = quit\n",
+            CODE_ERROR                          = "Should be A[###] or B[###], 0000 = item list, -1 = quit",
             QUANTITY_INPUT_INCORRECT_MESSAGE    = "!!! Invalid quantity\nShould be [1-100]",
+            QUANTITY_ERROR                      = "Should be [1-100]",
             BREAK_LINE                          = "--------------------",
-            ENTER_CODE_MESSAGE                  = "\nEnter product code : ",
-            ITEM_NAME_MESSAGE                   = "         item name : ",
-            ENTER_QUANTITY_MESSAGE              = "\n\tEnter quantity : ",
-            ITEM_TOTAL_MESSAGE                  = "        item total : $",
+            ENTER_CODE_MESSAGE                  = "Enter product code : ",
+            ITEM_NAME_MESSAGE                   = "item name : ",
+            ENTER_QUANTITY_MESSAGE              = "Enter quantity : ",
+            ITEM_TOTAL_MESSAGE                  = "item total : $",
             RECEIPT_LINE                        = "----------------------------",
             RECEIPT_TOP                         = "Items list:\n",
-            TENDERED_AMOUNT_RECEIPT             = "Tendered amount",
-            TENDER_AMOUNT_WRONG                 = "\nAmount entered is invalid",
-            TENDER_AMOUNT_TOO_SMALL             = "\nAmount entered is too small",
+            TENDERED_MESSAGE                    = "Tendered amount",
+            TENDER_AMOUNT_WRONG                 = "Amount entered is invalid",
+            TENDER_AMOUNT_TOO_SMALL             = "Amount entered is too small",
             CHANGE_AMOUNT                       = "Change",
             EOD_MESSAGE                         = "\nThe total sale for the day is  $",
 
-    UPDATE_PROMPT_MESSAGE               = "\nDo you want to update the items data? (A/D/M/Q): ",
+            UPDATE_PROMPT_MESSAGE               = "Do you want to update the items data? (A/D/M/Q): ",
             UPDATE_ERROR_MESSAGE                = "!!! Invalid input\nShould be (A/D/M/Q)",
+            UPDATE_ERROR                        = "Should be (A/D/M/Q)",
             UPDATE_CODE_PROMPT                  = "item code: ",
             UPDATE_NAME_PROMPT                  = "item name: ",
             UPDATE_PRICE_PROMPT                 = "item price: ",
 
     UPDATE_ITEM_ALREADY_ADDED           = "!!! item already created",
+            ERROR_ITEM_EXIST            = "!!! item already created",
             UPDATE_ITEM_NOT_FOUND               = "!!! item not found",
 
 
-    UPDATE_CODE_ERROR_MESSAGE           = "!!! Invalid input\nShould be A[###] or B[###]\n",
+            UPDATE_CODE_ERROR_MESSAGE           = "!!! Invalid input\nShould be A[###] or B[###]\n",
+            UPDATE_CODE_ERROR                   = "Should be A[###] or B[###]",
             UPDATE_NAME_ERROR_MESSAGE           = "!!! Invalid input\nName shouldn't be only digits\n",
 
     UPDATE_NAME_OLD_MESSAGE             = "!!! Invalid input\nName already used\n",
 
     UPDATE_PRICE_ERROR_MESSAGE          = "!!! Invalid input\nShould be greater than 0\n",
+            UPDATE_PRICE_ERROR          = "Should be [1-100]",
 
-    UPDATE_ADD_SUCCESSFUL               = "Item add successful!\n",
-            UPDATE_DELETE_SUCCESSFUL            = "Item delete successful!\n",
-            UPDATE_MODIFY_SUCCESSFUL            = "Item modify successful!\n",
+            UPDATE_ADD_SUCCESSFUL               = "Item add successful!",
+            UPDATE_DELETE_SUCCESSFUL            = "Item delete successful!",
+            UPDATE_MODIFY_SUCCESSFUL            = "Item modify successful!",
 
     THANK_YOU                           = "Thanks for using POST system. Goodbye.",
 
     FILE_NAME_KEY                       = "item.txt";
+
+    private static final String outputSingleFormat = "%-21s", outputSingleNewLineAfterFormat = "%-21s%n",
+            outputSingleNewLineBeforeFormat = "%n%-21s", outputDoubleFormat = "%-21s%s",
+            outputErrorDoubleNewLineFormat = "%-21s%n%s%n", outputEODFormat = "%n%s%s",
+            changeFormat = "%n%-21s$%7s%n%s%n", outputItemTotalFormat = "%-21s%7s%n";
 
     /**
      * Format for currency
@@ -66,22 +79,47 @@ public class Register {
     private static final DecimalFormat currencyFormat = new DecimalFormat("#,###.00");
 
     Register() {
-        // Initialize ProductCatalog
-        productCatalog = new ProductCatalog();
+
     }
 
     // object driver class
     void run() {
-        boolean saleQuitFlag = false, alterQuitFlag = false;
+        String fileName = "";
+        boolean saleQuitFlag = false, alterQuitFlag = false, fileNameFlag = false;
 
         // Create systemIn Scanner
         Scanner systemInScanner = new Scanner(System.in);
 
+        // Welcome message
+        System.out.printf(outputSingleNewLineAfterFormat,
+                WELCOME_MESSAGE);
+
+        // Get file name loop
+        do {
+            // Prompt for name
+            System.out.printf(outputSingleNewLineBeforeFormat,
+                    FILENAME_MESSAGE);
+            fileName = systemInScanner.next();
+
+            // Check if equal to FILE_NAME_KEY
+            if (Objects.equals(fileName, FILE_NAME_KEY)) {
+                // File name is correct
+                fileNameFlag = true;
+
+                // Initialize ProductCatalog
+                productCatalog = new ProductCatalog(fileName);
+
+            } else {
+                // File name is incorrect
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        FILE_ERROR);
+            }
+
+        } while (!fileNameFlag);
+
         // Sale loop
         do {
-            // Welcome message
-            System.out.print(WELCOME_MESSAGE);
-
             // Initialize Sale
             sale = new Sale();
 
@@ -99,6 +137,10 @@ public class Register {
             alterQuitFlag = alterCatalog(systemInScanner);
 
         } while (!alterQuitFlag);
+
+        // Output thank you message
+        System.out.printf(outputSingleNewLineBeforeFormat,
+                THANK_YOU);
 
         // Close scanner
         systemInScanner.close();
@@ -118,7 +160,8 @@ public class Register {
             // Loop input and check till correct
             do {
                 // Output Beginning Message
-                System.out.print(BEGINNING_SALE_MESSAGE);
+                System.out.printf(outputSingleNewLineBeforeFormat,
+                        BEGINNING_SALE_MESSAGE);
 
                 // User input
                 userInput = systemInScanner.next();
@@ -148,16 +191,13 @@ public class Register {
                         System.out.print(EOD_MESSAGE + String.format(eodFormat, currencyFormat.format(sale.getEodTotal())));
                     }
 
-                    // Prompt for update
-                    updateProducts(systemInScanner);
-
-                    // Output thank you message
-                    System.out.print("\n" + THANK_YOU);
                 }
                 else {
                     // Input incorrect
                     // Print incorrect message
-                    System.out.print(SALE_INPUT_ERROR_MESSAGE);
+                    System.out.printf(outputErrorDoubleNewLineFormat,
+                            INPUT_ERROR,
+                            SALE_ERROR);
                 }
 
             } while (returnInt == 0 || returnInt == 2);
@@ -185,7 +225,9 @@ public class Register {
             codeInputFlag = false;
 
             // Prompt for code input
-            System.out.print(ENTER_CODE_MESSAGE);
+//            System.out.print(ENTER_CODE_MESSAGE);
+            System.out.printf(outputSingleNewLineBeforeFormat,
+                    ENTER_CODE_MESSAGE);
 
             // User input
             userInput = systemInScanner.next();
@@ -198,7 +240,11 @@ public class Register {
                 if (specification == null) {
                     // Item not found
                     // Output incorrect code message
-                    System.out.print(CODE_INPUT_INCORRECT_MESSAGE);
+//                    System.out.print(CODE_INPUT_INCORRECT_MESSAGE);
+
+                    System.out.printf(outputErrorDoubleNewLineFormat,
+                            INPUT_ERROR,
+                            CODE_ERROR);
 
                 } else {
                     // Code input valid
@@ -207,7 +253,12 @@ public class Register {
 
                     // Item found
                     // Output Item name message + item name from itemArray
-                    System.out.print(ITEM_NAME_MESSAGE + specification.getProductName());
+//                    System.out.print(ITEM_NAME_MESSAGE + specification.getProductName());
+
+                    System.out.printf(outputDoubleFormat,
+                            ITEM_NAME_MESSAGE,
+                            specification.getProductName()
+                    );
 
                     // Run findQuantity
                     findQuantity(systemInScanner, specification);
@@ -223,8 +274,10 @@ public class Register {
                 // Loop till tendered amount is larger than total with tax
                 do {
                     try {
+
                         // Prompt for tender amount
-                        System.out.printf("\n%-21s$ ",TENDERED_AMOUNT_RECEIPT);
+                        System.out.printf(outputSingleNewLineBeforeFormat,
+                                TENDERED_MESSAGE);
 
                         // User input
                         BigDecimal tenderAmount = BigDecimal.valueOf(Double.parseDouble(systemInScanner.next()));
@@ -236,7 +289,7 @@ public class Register {
 
                             // Change
                             // Find change by subtracting tenderAmount by Total with tax
-                            System.out.printf("\n%-21s$%7s\n%s\n",
+                            System.out.printf(changeFormat,
                                     CHANGE_AMOUNT,
                                     currencyFormat.format(tenderAmount.subtract(subtotalTax)),
                                     RECEIPT_LINE
@@ -247,22 +300,27 @@ public class Register {
                         }
                         else {
                             // Tender is wrong
-                            System.out.print(TENDER_AMOUNT_TOO_SMALL);
+                            System.out.printf(outputSingleNewLineBeforeFormat,
+                                    TENDER_AMOUNT_TOO_SMALL);
                         }
                     } catch (Exception e) {
                         // Tender is wrong
-                        System.out.print(TENDER_AMOUNT_WRONG);
+                        System.out.printf(outputSingleNewLineBeforeFormat,
+                                TENDER_AMOUNT_WRONG);
                     }
 
                 } while (!tenderCorrectFlag);
 
             } else if (userInput.equals("0000")) {
-                // Print item list
-                listItems();
+                // List products
+                System.out.println(listItems());
 
             } else {
                 // Output incorrect code message
-                System.out.print(CODE_INPUT_INCORRECT_MESSAGE);
+//                System.out.print(CODE_INPUT_INCORRECT_MESSAGE);
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        CODE_ERROR);
             }
 
         } while (!codeInputFlag || !quitFlag);
@@ -278,7 +336,8 @@ public class Register {
         do {
             try {
                 // Prompt for item quantity
-                System.out.print(ENTER_QUANTITY_MESSAGE);
+                System.out.printf(outputSingleNewLineBeforeFormat,
+                        ENTER_QUANTITY_MESSAGE);
 
                 // User input
                 productQuantity = Integer.parseInt(systemInScanner.next());
@@ -289,39 +348,48 @@ public class Register {
                     quantityInputFlag = true;
 
                     // Calc price
-                    productPrice = specification.getProductPrice().multiply(BigDecimal.valueOf(productQuantity));
+                    productPrice = (specification.getProductPrice()).multiply(BigDecimal.valueOf(productQuantity));
 
                     // Add Item price to Sale object
-                    sale.addSalesLineItem(specification,productQuantity);
+                    sale.addSalesLineItem(specification,productQuantity,productPrice);
 
                     // Output item total
-                    System.out.print(ITEM_TOTAL_MESSAGE +  String.format(outputFormat,
-                            currencyFormat.format(productPrice) +
-                                    "\n"));
+//                    System.out.print(ITEM_TOTAL_MESSAGE +  String.format(outputFormat,
+//                            currencyFormat.format(productPrice) +
+//                                    "\n"));
+
+                    System.out.printf(outputItemTotalFormat,
+                            ITEM_TOTAL_MESSAGE,
+                            currencyFormat.format(productPrice));
                 }
                 else {
                     // Quantity Input Incorrect
                     // Print incorrect message
-                    System.out.print(QUANTITY_INPUT_INCORRECT_MESSAGE);
+//                    System.out.print(QUANTITY_INPUT_INCORRECT_MESSAGE);
+
+                    System.out.printf(outputErrorDoubleNewLineFormat,
+                            INPUT_ERROR,
+                            QUANTITY_ERROR);
                 }
 
             } catch (Exception e) {
                 // Quantity input is incorrect
-                System.out.print(QUANTITY_INPUT_INCORRECT_MESSAGE);
+//                System.out.print(QUANTITY_INPUT_INCORRECT_MESSAGE);
+
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        QUANTITY_ERROR);
             }
 
         } while (!quantityInputFlag);
-    }
-
-    public void updateProducts(Scanner systemInScanner) {
-
     }
 
     // Returns true if finished, else returns false
     public boolean alterCatalog(Scanner systemInScanner) {
 
         // Prompt for Add, Delete, Modify, or Quit Items
-        System.out.print(UPDATE_PROMPT_MESSAGE);
+        System.out.printf(outputSingleNewLineBeforeFormat,
+                UPDATE_PROMPT_MESSAGE);
 
         // User input
         String userInput = systemInScanner.next();
@@ -348,7 +416,11 @@ public class Register {
             }
             default -> {
                 // Input invalid
-                System.out.print(UPDATE_ERROR_MESSAGE);
+//                System.out.print(UPDATE_ERROR_MESSAGE);
+
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        UPDATE_ERROR);
             }
         }
 
@@ -365,7 +437,8 @@ public class Register {
         // Find code
         do {
             // Prompt for code input
-            System.out.print(UPDATE_CODE_PROMPT);
+            System.out.printf(outputSingleNewLineBeforeFormat,
+                    UPDATE_CODE_PROMPT);
 
             // User input
             userInput = systemInScanner.next();
@@ -380,19 +453,27 @@ public class Register {
 
                 } else {
                     // Created before
-                    System.out.print(UPDATE_ITEM_ALREADY_ADDED + "\n");
+//                    System.out.print(UPDATE_ITEM_ALREADY_ADDED + "\n");
+
+                    System.out.printf(outputSingleNewLineAfterFormat,
+                            ERROR_ITEM_EXIST);
                 }
             } else {
                 // Code input invalid
-                System.out.print(UPDATE_CODE_ERROR_MESSAGE);
+//                System.out.print(UPDATE_CODE_ERROR_MESSAGE);
+
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        UPDATE_CODE_ERROR);
             }
 
         } while (!codeInputFlag);
 
         // Find name
         do {
-            // Prompt for code input
-            System.out.print(UPDATE_NAME_PROMPT);
+            // Prompt for name input
+            System.out.printf(outputSingleFormat,
+                    UPDATE_NAME_PROMPT);
 
             // Clear scanner buffer
             systemInScanner.nextLine();
@@ -411,7 +492,8 @@ public class Register {
         // Find price
         do {
             // Prompt for code input
-            System.out.print(UPDATE_PRICE_PROMPT);
+            System.out.printf(outputSingleFormat,
+                    UPDATE_PRICE_PROMPT);
 
             // User input
             userInput = systemInScanner.next();
@@ -424,12 +506,20 @@ public class Register {
 
                 } else {
                     // Input invalid
-                    System.out.print(UPDATE_PRICE_ERROR_MESSAGE);
+//                    System.out.print(UPDATE_PRICE_ERROR_MESSAGE);
+
+                    System.out.printf(outputErrorDoubleNewLineFormat,
+                            INPUT_ERROR,
+                            QUANTITY_ERROR);
 
                 }
             } catch (Exception e) {
                 // Price input invalid
-                System.out.print(UPDATE_PRICE_ERROR_MESSAGE);
+//                System.out.print(UPDATE_PRICE_ERROR_MESSAGE);
+
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        QUANTITY_ERROR);
             }
         } while (!priceInputFlag);
 
@@ -437,7 +527,8 @@ public class Register {
         productCatalog.addProductSpecification(codeInput,nameInput,priceInput);
 
         // Output success message
-        System.out.print(UPDATE_ADD_SUCCESSFUL);
+        System.out.printf(outputSingleNewLineAfterFormat,
+                UPDATE_ADD_SUCCESSFUL);
     }
 
     private void deleteProductCatalogItem(Scanner systemInScanner) {
@@ -449,7 +540,8 @@ public class Register {
         // Find code
         do {
             // Prompt for code input
-            System.out.print(UPDATE_CODE_PROMPT);
+            System.out.printf(outputSingleNewLineBeforeFormat,
+                    UPDATE_CODE_PROMPT);
 
             // User input
             userInput = systemInScanner.next();
@@ -459,16 +551,21 @@ public class Register {
                 // Code input valid, check if item already created
                 if (productCatalog.getProductSpecification(userInput) == null) {
                     // Not created before
-                    codeInputFlag = true;
-                    codeInput = userInput;
+                    System.out.printf(outputSingleNewLineBeforeFormat,
+                            UPDATE_ITEM_NOT_FOUND);
 
                 } else {
                     // Created before
-                    System.out.print(UPDATE_ITEM_ALREADY_ADDED);
+                    codeInputFlag = true;
+                    codeInput = userInput;
                 }
             } else {
                 // Code input invalid
-                System.out.print(UPDATE_CODE_ERROR_MESSAGE);
+//                System.out.print(UPDATE_CODE_ERROR_MESSAGE);
+
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        UPDATE_CODE_ERROR);
             }
 
         } while (!codeInputFlag);
@@ -477,7 +574,8 @@ public class Register {
         productCatalog.deleteProductSpecification(codeInput);
 
         // Output success message
-        System.out.print(UPDATE_DELETE_SUCCESSFUL);
+        System.out.printf(outputSingleNewLineAfterFormat,
+                UPDATE_DELETE_SUCCESSFUL);
     }
 
     private void modifyProductCatalogItem(Scanner systemInScanner) {
@@ -490,7 +588,10 @@ public class Register {
         // Find code
         do {
             // Prompt for code input
-            System.out.print(UPDATE_CODE_PROMPT);
+//            System.out.print(UPDATE_CODE_PROMPT);
+
+            System.out.printf(outputSingleNewLineBeforeFormat,
+                    UPDATE_CODE_PROMPT);
 
             // User input
             userInput = systemInScanner.next();
@@ -500,7 +601,8 @@ public class Register {
                 // Code input valid, check if item already created
                 if (productCatalog.getProductSpecification(userInput) == null) {
                     // Not created before
-                    System.out.print(UPDATE_ITEM_NOT_FOUND);
+                    System.out.printf(outputSingleNewLineAfterFormat,
+                            UPDATE_ITEM_NOT_FOUND);
 
                 } else {
                     // Created before
@@ -510,7 +612,11 @@ public class Register {
                 }
             } else {
                 // Code input invalid
-                System.out.print(UPDATE_CODE_ERROR_MESSAGE);
+//                System.out.print(UPDATE_CODE_ERROR_MESSAGE);
+
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        UPDATE_CODE_ERROR);
             }
 
         } while (!codeInputFlag);
@@ -518,7 +624,10 @@ public class Register {
         // Find name
         do {
             // Prompt for code input
-            System.out.print(UPDATE_NAME_PROMPT);
+//            System.out.print(UPDATE_NAME_PROMPT);
+
+            System.out.printf(outputSingleFormat,
+                    UPDATE_NAME_PROMPT);
 
             // Clear scanner buffer
             systemInScanner.nextLine();
@@ -537,7 +646,10 @@ public class Register {
         // Find price
         do {
             // Prompt for code input
-            System.out.print(UPDATE_PRICE_PROMPT);
+//            System.out.print(UPDATE_PRICE_PROMPT);
+
+            System.out.printf(outputSingleFormat,
+                    UPDATE_PRICE_PROMPT);
 
             // User input
             userInput = systemInScanner.next();
@@ -550,12 +662,20 @@ public class Register {
 
                 } else {
                     // Input invalid
-                    System.out.print(UPDATE_PRICE_ERROR_MESSAGE);
+//                    System.out.print(UPDATE_PRICE_ERROR_MESSAGE);
+
+                    System.out.printf(outputErrorDoubleNewLineFormat,
+                            INPUT_ERROR,
+                            QUANTITY_ERROR);
 
                 }
             } catch (Exception e) {
                 // Price input invalid
-                System.out.print(UPDATE_PRICE_ERROR_MESSAGE);
+//                System.out.print(UPDATE_PRICE_ERROR_MESSAGE);
+
+                System.out.printf(outputErrorDoubleNewLineFormat,
+                        INPUT_ERROR,
+                        QUANTITY_ERROR);
             }
         } while (!priceInputFlag);
 
@@ -566,7 +686,8 @@ public class Register {
         productCatalog.addProductSpecification(codeInput,nameInput,priceInput);
 
         // Output success message
-        System.out.print(UPDATE_MODIFY_SUCCESSFUL);
+        System.out.printf(outputErrorDoubleNewLineFormat,
+                UPDATE_MODIFY_SUCCESSFUL);
     }
 
     // Calls for a list of all products stored in ProductCatalog

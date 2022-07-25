@@ -16,10 +16,10 @@ public class SalesLineItem implements Comparable<SalesLineItem>{
         productTaxable = false;
     }
 
-    SalesLineItem(ProductSpecification specification, int quantity) {
+    SalesLineItem(ProductSpecification specification, int quantity, BigDecimal price) {
         productCode = specification.getProductCode();
         productName = specification.getProductName();
-        productTotal = specification.getProductPrice();
+        productTotal = price;
         productQuantity = quantity;
         productTaxable = specification.getProductTaxable();
     }
