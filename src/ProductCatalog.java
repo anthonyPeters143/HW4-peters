@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -19,11 +20,8 @@ public class ProductCatalog {
 
         // Input data from file
         try {
-            // Create file
-            File catalogFile = new File(fileName);
-
-            // Set up scanner
-            Scanner productCatalogScanner = new Scanner(catalogFile);
+            // Set up scanner from file
+            Scanner productCatalogScanner = new Scanner(new File("src/" + fileName));
 
             // Scan in input and split by new line commas
             String productCatalogLine = productCatalogScanner.nextLine();
