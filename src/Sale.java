@@ -48,9 +48,8 @@ public class Sale {
 
     public String createReceipt(DecimalFormat currencyFormat) {
         BigDecimal taxableTotal = BigDecimal.valueOf(0), nontaxableTotal = BigDecimal.valueOf(0);
-        String receiptString = "";
-        String quantityNameTotalFormat = "%4s %-16s$%7s5n",
-//                subtotalFormat = "%-21s$%7s", subtotalTaxFormat = "%-21s$%7s";
+        String receiptString = "Items list:\n";
+        String quantityNameTotalFormat = "%4s %-16s$%7s%n",
                     subtotalFormat = "%-21s$%7s%n%-21s$%7s";
 
         // Sort into alphabetical order by name
@@ -74,11 +73,11 @@ public class Sale {
             }
 
             // Add product's name, quantity, total, and new line char to return string
-            receiptString = receiptString.concat(String.format(quantityNameTotalFormat,
-                    salesLineItemTracker.getProductQuantity(),
-                    salesLineItemTracker.getProductName(),
-                    currencyFormat.format(salesLineItemTracker.getProductTotal()))
-                    );
+            receiptString = receiptString.concat(
+                    String.format(quantityNameTotalFormat,
+                        salesLineItemTracker.getProductQuantity(),
+                        salesLineItemTracker.getProductName(),
+                        currencyFormat.format(salesLineItemTracker.getProductTotal())) );
         }
 
         subtotal = taxableTotal.add(nontaxableTotal);
@@ -87,9 +86,9 @@ public class Sale {
         // Compile subtotals then format strings and concat to receipt string
         receiptString = receiptString.concat(
                 String.format(subtotalFormat,
-                    "Subtotal",
+                        "Subtotal",
                         currencyFormat.format(subtotal),
-                    "Total with tax (6%)",
+                        "Total with tax (6%)",
                         currencyFormat.format(subtotalTax)));
 
 
